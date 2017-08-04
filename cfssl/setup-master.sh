@@ -7,7 +7,7 @@ ETCD_DATA_DIR="/var/lib/etcd/default.etcd"
 #ETCD_HEARTBEAT_INTERVAL="100"
 #ETCD_ELECTION_TIMEOUT="1000"
 #ETCD_LISTEN_PEER_URLS="http://localhost:2380"
-ETCD_LISTEN_CLIENT_URLS="https://0.0.0.0:2379,http://localhost:4001"
+ETCD_LISTEN_CLIENT_URLS="https://192.168.50.100:2379"
 #ETCD_MAX_SNAPSHOTS="5"
 #ETCD_MAX_WALS="5"
 #ETCD_CORS=""
@@ -18,7 +18,7 @@ ETCD_LISTEN_CLIENT_URLS="https://0.0.0.0:2379,http://localhost:4001"
 #ETCD_INITIAL_CLUSTER="default=http://localhost:2380"
 #ETCD_INITIAL_CLUSTER_STATE="new"
 #ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
-ETCD_ADVERTISE_CLIENT_URLS="https://0.0.0.0:2379,http://localhost:4001"
+ETCD_ADVERTISE_CLIENT_URLS="https://192.168.50.100:2379"
 #ETCD_DISCOVERY=""
 #ETCD_DISCOVERY_SRV=""
 #ETCD_DISCOVERY_FALLBACK="proxy"
@@ -78,7 +78,7 @@ KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.254.0.0/16"
 KUBE_ADMISSION_CONTROL="--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 
 # Add your own!
-KUBE_API_ARGS="--tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/client-apiserver-key.pem --runtime-config=extensions/v1beta1/networkpolicies=true --anonymous-auth=false"
+KUBE_API_ARGS="--tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem --runtime-config=extensions/v1beta1/networkpolicies=true --anonymous-auth=false"
 EOT
 
 sudo cat <<EOT > /etc/kubernetes/controller-manager
@@ -88,7 +88,7 @@ sudo cat <<EOT > /etc/kubernetes/controller-manager
 # defaults from config and apiserver should be adequate
 
 # Add your own!
-KUBE_CONTROLLER_MANAGER_ARGS="--master=http://127.0.0.1:8080 --leader-elect=true --service-account-private-key-file=/etc/kubernetes/ssl/client-apiserver-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem"
+KUBE_CONTROLLER_MANAGER_ARGS="--master=http://127.0.0.1:8080 --leader-elect=true --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem"
 EOT
 
 sudo cat <<EOT > /home/vagrant/.bashrc
@@ -104,10 +104,12 @@ fi
 
 # User specific aliases and functions
 
-kubectl config set-cluster default-cluster --server=https://192.168.50.100:6443 --certificate-authority=/etc/kubernetes/ssl/ca.pem
-kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/client-apiserver-key.pem --client-certificate=/etc/kubernetes/ssl/client-apiserver.pem
-kubectl config set-context default-system --cluster=default-cluster --user=default-admin
-kubectl config use-context default-system
+function setupkubectl {
+  kubectl config set-cluster default-cluster --server=https://192.168.50.100:6443 --certificate-authority=/etc/kubernetes/ssl/ca.pem
+  kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/admin-key.pem --client-certificate=/etc/kubernetes/ssl/admin.pem
+  kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+  kubectl config use-context default-system
+}
 EOT
 
 for SERVICES in etcd kube-controller-manager kube-scheduler kube-apiserver; do
@@ -116,7 +118,11 @@ for SERVICES in etcd kube-controller-manager kube-scheduler kube-apiserver; do
   sudo systemctl status $SERVICES 
 done
 
-sudo etcdctl set /atomic.io/network/config '{"Network":"172.17.0.0/16"}'
+sudo etcdctl --endpoints https://192.168.50.100:2379 \
+             --ca-file /etc/kubernetes/ssl/ca.pem \
+             --cert-file /etc/kubernetes/ssl/client-apiserver.pem \
+             --key-file /etc/kubernetes/ssl/client-apiserver-key.pem \
+             set /atomic.io/network/config '{"Network":"172.17.0.0/16"}'
 
 # kubectl config set-cluster default-cluster --server=https://10.10.0.60:6443 --certificate-authority=certs/ca.pem
 # kubectl config set-credentials default-admin --certificate-authority=certs/ca.pem --client-key=certs/client-apiserver-key.pem --client-certificate=certs/client-apiserver.pem
