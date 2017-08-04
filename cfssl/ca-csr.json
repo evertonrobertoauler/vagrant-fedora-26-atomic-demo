@@ -1,0 +1,20 @@
+{
+    "CN": "aulertec.com.br",
+    "hosts": [
+        "10.10.0.60",
+        "192.168.50.100",
+        "aulertec.com.br"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "CA",
+            "ST": "San Francisco"
+        }
+    ]
+}
+
