@@ -10,31 +10,39 @@ else
   # CA
   cfssl gencert -initca $CFSSL_DIR/ca-csr.json | cfssljson -bare $CERTS_DIR/ca -
 
-  # ETCD
+  # SERVER - ETCD
   cat $CFSSL_DIR/server.json | sed "s/\${SERVERNAME}/kube-master/g" | cfssl gencert \
       -ca=$CERTS_DIR/ca.pem \
       -ca-key=$CERTS_DIR/ca-key.pem \
       -config=$CFSSL_DIR/ca-config.json \
-      -profile=server - | cfssljson -bare $CERTS_DIR/etcd
+      -profile=server \
+      -hostname="192.168.50.100" - | cfssljson -bare $CERTS_DIR/etcd
 
-  # APISERVER
+  # SERVER - APISERVER
   cat $CFSSL_DIR/server.json | sed "s/\${SERVERNAME}/kube-master/g" | cfssl gencert \
       -ca=$CERTS_DIR/ca.pem \
       -ca-key=$CERTS_DIR/ca-key.pem \
       -config=$CFSSL_DIR/ca-config.json \
-      -profile=server  - | cfssljson -bare $CERTS_DIR/apiserver
+      -profile=server \
+      -hostname="192.168.50.100,192.168.50.101,10.10.0.60"  - | cfssljson -bare $CERTS_DIR/apiserver
 
-  # # APISERVER - CLIENT
+  # CLIENT - APISERVER
   cfssl gencert -ca=$CERTS_DIR/ca.pem \
     -ca-key=$CERTS_DIR/ca-key.pem \
     -config=$CFSSL_DIR/ca-config.json \
     -profile=client $CFSSL_DIR/client.json | cfssljson -bare $CERTS_DIR/client-apiserver
 
-  # # ADMIN
+  # CLIENT - ADMIN
   cfssl gencert -ca=$CERTS_DIR/ca.pem \
     -ca-key=$CERTS_DIR/ca-key.pem \
     -config=$CFSSL_DIR/ca-config.json \
     -profile=client $CFSSL_DIR/client.json | cfssljson -bare $CERTS_DIR/admin
+
+  # CLIENT - WORKER
+  cfssl gencert -ca=$CERTS_DIR/ca.pem \
+    -ca-key=$CERTS_DIR/ca-key.pem \
+    -config=$CFSSL_DIR/ca-config.json \
+    -profile=client $CFSSL_DIR/client.json | cfssljson -bare $CERTS_DIR/worker
 
   echo "Certificados gerados com sucesso!"
 fi

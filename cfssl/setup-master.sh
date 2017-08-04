@@ -78,7 +78,7 @@ KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.254.0.0/16"
 KUBE_ADMISSION_CONTROL="--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 
 # Add your own!
-KUBE_API_ARGS="--tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem --runtime-config=extensions/v1beta1/networkpolicies=true --anonymous-auth=false"
+KUBE_API_ARGS="--tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --client-ca-file=/etc/kubernetes/ssl/ca.pem --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem --runtime-config=extensions/v1beta1/networkpolicies=true --anonymous-auth=false --kubelet-certificate-authority=/etc/kubernetes/ssl/ca.pem --kubelet-client-certificate=/etc/kubernetes/ssl/worker.pem --kubelet-client-key=/etc/kubernetes/ssl/worker-key.pem"
 EOT
 
 sudo cat <<EOT > /etc/kubernetes/controller-manager
@@ -89,6 +89,16 @@ sudo cat <<EOT > /etc/kubernetes/controller-manager
 
 # Add your own!
 KUBE_CONTROLLER_MANAGER_ARGS="--master=http://127.0.0.1:8080 --leader-elect=true --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem --root-ca-file=/etc/kubernetes/ssl/ca.pem"
+EOT
+
+sudo cat <<EOT > /etc/kubernetes/scheduler
+###
+# kubernetes scheduler config
+
+# default config should be adequate
+
+# Add your own!
+KUBE_SCHEDULER_ARGS="--master=http://127.0.0.1:8080 --leader-elect=true"
 EOT
 
 sudo cat <<EOT > /home/vagrant/.bashrc

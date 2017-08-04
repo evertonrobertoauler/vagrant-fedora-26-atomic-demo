@@ -1,10 +1,6 @@
 {
     "CN": "${SERVERNAME}",
-    "hosts": [
-        "10.10.0.60",
-        "192.168.50.100",
-        "aulertec.com.br"
-    ],
+    "hosts": [],
     "key": {
         "algo": "rsa",
         "size": 2048
