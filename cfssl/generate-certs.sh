@@ -24,7 +24,7 @@ else
       -ca-key=$CERTS_DIR/ca-key.pem \
       -config=$CFSSL_DIR/ca-config.json \
       -profile=server \
-      -hostname="192.168.50.100,192.168.50.101,10.10.0.60"  - | cfssljson -bare $CERTS_DIR/apiserver
+      -hostname="192.168.50.100,192.168.50.101,192.168.50.102,10.10.0.60"  - | cfssljson -bare $CERTS_DIR/apiserver
 
   # CLIENT - APISERVER
   cfssl gencert -ca=$CERTS_DIR/ca.pem \

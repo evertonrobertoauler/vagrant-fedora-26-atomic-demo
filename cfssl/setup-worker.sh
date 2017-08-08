@@ -56,14 +56,24 @@ KUBELET_HOSTNAME="--hostname-override=$WORKER_IP"
 KUBELET_API_SERVER="--api-servers=https://192.168.50.100:6443"
 
 # Add your own!
-KUBELET_ARGS="--cgroup-driver=systemd --kubeconfig=/etc/kubernetes/kube.config --anonymous-auth=false --register-node=true --client-ca-file=/etc/kubernetes/ssl/ca.pem --tls-cert-file=/etc/kubernetes/ssl/worker.pem --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem"
+KUBELET_ARGS="--cgroup-driver=systemd --kubeconfig=/etc/kubernetes/kube.config --logtostderr=true --anonymous-auth=false --register-node=true --client-ca-file=/etc/kubernetes/ssl/ca.pem --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem"
+EOT
+
+sudo cat <<EOT > /etc/kubernetes/proxy 
+###
+# kubernetes proxy config
+
+# default config should be adequate
+
+# Add your own!
+KUBE_PROXY_ARGS="--master=https://192.168.50.100:6443 --kubeconfig=/etc/kubernetes/kube.config --logtostderr=true"
 EOT
 
 sudo cat <<EOT > /etc/kubernetes/kube.config
 apiVersion: v1
 kind: Config
 users:
-- name: kubelet
+- name: worker
   user:
     client-certificate: /etc/kubernetes/ssl/worker.pem
     client-key: /etc/kubernetes/ssl/worker-key.pem
@@ -75,7 +85,7 @@ clusters:
 contexts:
 - context:
     cluster: kube
-    user: kubelet
+    user: worker
 EOT
 
 for SERVICES in kube-proxy kubelet docker flanneld; do
