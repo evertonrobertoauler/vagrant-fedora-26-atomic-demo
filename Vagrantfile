@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # master.vm.provision "shell", inline: "sudo reboot"
   end
 
-  (1..1).each do |i|
+  (1..2).each do |i|
     config.vm.define "kube-worker-#{i}" do |worker|
       worker.vm.box = "fedora/26-atomic-host"
       worker.vm.network "private_network", ip: "192.168.50.10#{i}"
