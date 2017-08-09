@@ -56,7 +56,7 @@ KUBELET_HOSTNAME="--hostname-override=$WORKER_IP"
 KUBELET_API_SERVER="--api-servers=https://192.168.50.100:6443"
 
 # Add your own!
-KUBELET_ARGS="--cgroup-driver=systemd --kubeconfig=/etc/kubernetes/kube.config --logtostderr=true --anonymous-auth=false --register-node=true --client-ca-file=/etc/kubernetes/ssl/ca.pem --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem"
+KUBELET_ARGS="--cgroup-driver=systemd --pod-manifest-path=/etc/kubernetes/manifests --cluster-dns=10.254.0.10 --cluster-domain=cluster.local --kubeconfig=/etc/kubernetes/kube.config --logtostderr=true --anonymous-auth=false --register-node=true --client-ca-file=/etc/kubernetes/ssl/ca.pem --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem"
 EOT
 
 sudo cat <<EOT > /etc/kubernetes/proxy 
